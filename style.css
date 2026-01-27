@@ -1,0 +1,267 @@
+/* グローバル設定 */
+body, html {
+  margin: 0;
+  padding: 0;
+  font-family: 'Noto Sans JP', sans-serif;
+  color: #333;
+  line-height: 1.6;
+  scroll-behavior: smooth;
+}
+
+/* ヒーローセクション */
+.hero-section {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  color: white;
+  overflow: hidden;
+}
+
+.hero-background {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: url('assets/images/html/hero-bg.png');
+  background-size: cover;
+  background-position: center;
+  filter: brightness(0.5);
+  z-index: -1;
+}
+
+.hero-content {
+  position: relative;
+  z-index: 1;
+  padding: 20px;
+  max-width: 800px;
+}
+
+.hero-title {
+  font-size: clamp(2.0rem, 7vw, 4.0rem);
+  margin-bottom: 20px;
+  font-weight: bold;
+  letter-spacing: 2px;
+  text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+}
+
+.hero-subtitle {
+  font-size: clamp(1rem, 3vw, 1.5rem);
+  margin-bottom: 40px;
+  max-width: 600px;
+  text-shadow: 1px 1px 3px rgba(0,0,0,0.5);
+}
+
+.start-button {
+  display: inline-block;
+  background-color: #e67e22; 
+  color: white;
+  padding: 20px 60px;
+  font-size: clamp(1.2rem, 4vw, 1.8rem);
+  font-weight: bold;
+  text-decoration: none;
+  border-radius: 50px;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+  box-shadow: 0 8px 15px rgba(230, 126, 34, 0.4);
+  border: none;
+  cursor: pointer;
+}
+
+.start-button:hover {
+  background-color: #d35400;
+  transform: translateY(-3px);
+}
+
+/* サービス紹介セクション */
+.feature-section {
+  padding: 80px 20px;
+  text-align: center;
+  background-color: #fffcf5;
+}
+
+.section-title {
+  font-size: clamp(2rem, 5vw, 3rem);
+  margin-bottom: 60px;
+  color: #2c3e50;
+}
+
+.features-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 40px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.feature-item {
+  background-color: white;
+  padding: 30px;
+  border-radius: 10px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+  transition: transform 0.3s ease;
+}
+
+.feature-item:hover {
+  transform: translateY(-10px);
+}
+
+.feature-item img {
+  width: 150px;
+  height: 150px;
+  object-fit: contain;
+  margin-bottom: 20px;
+}
+
+.feature-item h3 {
+  font-size: 1.5rem;
+  margin-bottom: 15px;
+  color: #e67e22;
+}
+
+.feature-item p {
+  font-size: 1rem;
+  color: #555;
+}
+
+/* 利用シーンセクション */
+.usage-section {
+  padding: 80px 20px;
+  text-align: center;
+  background-color: #ecf0f1;
+}
+
+.usage-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 30px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.usage-card {
+  background-color: white;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+.usage-card img {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+}
+
+.usage-card-content {
+  padding: 25px;
+  text-align: left;
+}
+
+.usage-card h3 {
+  font-size: 1.3rem;
+  margin-bottom: 10px;
+  color: #333;
+}
+
+.usage-card p {
+  font-size: 0.95rem;
+  color: #666;
+}
+
+/* フッター */
+footer {
+  background-color: #2c3e50;
+  color: white;
+  text-align: center;
+  padding: 40px 20px;
+  font-size: 0.9rem;
+}
+
+/* AR表示エリア */
+#ar-container {
+  width: 100vw;
+  height: 100vh;
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 900;
+}
+
+/* --- 以下、オーディオコントローラーのスタイル --- */
+#audio-controls {
+  display: none; /* 初期状態は非表示 */
+  position: fixed;
+  bottom: 30px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1000;
+  background: rgba(255, 255, 255, 0.95); /* ガラスっぽい透過背景 */
+  padding: 20px;
+  border-radius: 20px;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+  width: 90%;
+  max-width: 400px;
+  text-align: center;
+  backdrop-filter: blur(5px);
+}
+
+#play-audio-btn {
+  padding: 10px 30px;
+  font-size: 16px;
+  font-weight: bold;
+  margin-bottom: 15px;
+  cursor: pointer;
+  background: #e67e22;
+  color: white;
+  border: none;
+  border-radius: 50px;
+  transition: background 0.2s;
+}
+
+#play-audio-btn:hover {
+  background: #d35400;
+}
+
+.seek-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+  color: #333;
+}
+
+#current-time, #duration {
+  font-variant-numeric: tabular-nums; /* 数字の幅を揃える */
+  width: 40px;
+}
+
+#seek-bar {
+  flex-grow: 1;
+  cursor: pointer;
+  width: 100%;
+  height: 6px;
+  background: #ddd;
+  border-radius: 5px;
+  outline: none;
+  -webkit-appearance: none; /* デフォルトスタイル無効化 */
+}
+
+/* シークバーのつまみ部分 (Chrome/Safari) */
+#seek-bar::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 18px;
+  height: 18px;
+  background: #e67e22;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: transform 0.1s;
+}
+
+#seek-bar::-webkit-slider-thumb:hover {
+  transform: scale(1.2);
+}

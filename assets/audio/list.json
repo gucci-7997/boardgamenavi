@@ -1,0 +1,22 @@
+[
+  {
+    "target": 0,
+    "file": "package-front.wav"
+  },
+  {
+    "target": 1,
+    "file": "package-back.wav"
+  },
+  {
+    "target": 2,
+    "file": "instructions-front.wav"
+  },
+  {
+    "target": 3,
+    "file": "syusyoku.wav"
+  },
+  {
+    "target": 4,
+    "file": "elevator.wav"
+  }
+]

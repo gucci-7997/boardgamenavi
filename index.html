@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ボードゲームARガイド</title>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  
+  <script src="https://cdn.jsdelivr.net/npm/three@0.136.0/build/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.1.4/dist/mindar-image-three.prod.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.136.0/examples/js/loaders/GLTFLoader.js"></script>
+</head>
+<body>
+
+  <main>
+    <section class="hero-section">
+      <div class="hero-background"></div>
+      <div class="hero-content">
+        <h1 class="hero-title"><br>ボードゲームARガイド</h1>
+        <p class="hero-subtitle">パッケージにスマホをかざすと解説スタート。<br>画面をタップすると中身のカードが見れます。</p>
+        <button id="start-btn" class="start-button">ARガイドを起動</button>
+      </div>
+    </section>
+
+    <section class="feature-section">
+      <h2 class="section-title">このシステムの特徴</h2>
+      <div class="features-grid">
+        <div class="feature-item">
+          <img src="assets/images/html/icon-scan.png" alt="スキャン">
+          <h3>パッケージ認識</h3>
+          <p>箱をかざすだけで認識します。</p>
+        </div>
+        <div class="feature-item">
+          <img src="assets/images/html/icon-voice.png" alt="音声">
+          <h3>音声ガイド</h3>
+          <p>ルールや概要を音声で解説します。</p>
+        </div>
+        <div class="feature-item">
+          <img src="assets/images/html/icon-play.png" alt="カード">
+          <h3>中身をAR表示</h3>
+          <p>タップすると内容物のカードが飛び出します。</p>
+        </div>
+      </div>
+    </section>
+    <section class="usage-section">
+      <h2 class="section-title">こんなシーンで活用できます</h2>
+      <div class="usage-grid">
+        <div class="usage-card">
+          <img src="assets/images/html/usage-cafe.png" alt="ボードゲームカフェ">
+          <div class="usage-card-content">
+            <h3>ボードゲームカフェで</h3>
+            <p>棚に並んだたくさんのゲーム。「これどんなゲームだろう？」と気になったらパッケージにかざすだけ。店員さんを呼ばなくても概要が分かります。</p>
+          </div>
+        </div>
+        <div class="usage-card">
+          <img src="assets/images/html/usage-shop.png" alt="ショップ">
+          <div class="usage-card-content">
+            <h3>ショップでの購入前に</h3>
+            <p>パッケージの裏面を読むだけでは分からない実際のプレイ感や、推奨人数・プレイ時間などのスペック情報を音声で補足します。</p>
+          </div>
+        </div>
+        <div class="usage-card">
+          <img src="assets/images/html/usage-home.png" alt="自宅でのプレイ">
+          <div class="usage-card-content">
+            <h3>自宅でのインスト時に</h3>
+            <p>友人と遊ぶ際、ルールの説明（インスト）をARにお任せ。準備の手順や勝利条件を音声で流すことで、スムーズにゲームを開始できます。</p>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main> 
+  
+  <footer>
+    <p>&copy; 2025 Mottainai Games. All rights reserved.</p>
+  </footer>
+    
+  <div id="loading-screen" style="display:none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); color: white; z-index: 9999; flex-direction: column; justify-content: center; align-items: center;">
+    <p>データを読み込み中...</p>
+  </div>
+
+  <div id="ar-container"></div>
+  <div id="audio-container" style="display:none"></div>
+
+  <div id="audio-controls">
+    <button id="play-audio-btn">解説を再生</button>
+    <div class="seek-wrapper">
+      <span id="current-time">0:00</span>
+      <input type="range" id="seek-bar" value="0" max="100">
+      <span id="duration">--:--</span>
+    </div>
+  </div>
+
+  <script>
+    const startBtn = document.getElementById("start-btn");
+    const loadingScreen = document.getElementById("loading-screen");
+    const controls = document.getElementById("audio-controls");
+    const playAudioBtn = document.getElementById("play-audio-btn");
+    const seekBar = document.getElementById("seek-bar");
+    const currentTimeLabel = document.getElementById("current-time");
+    const durationLabel = document.getElementById("duration");
+    const arContainer = document.getElementById("ar-container");
+    const audioContainer = document.getElementById("audio-container");
+
+    let audios = [];
+    let currentAudioIndex = null; 
+    let activeAudio = null;
+    const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+
+    const loader = new THREE.GLTFLoader();
+    // ★ 画像読み込み用のローダーを追加
+    const textureLoader = new THREE.TextureLoader();
+
+    let loadedModel = null; 
+    let cardGroup = null;   
+    let animatedModels = []; 
+    let isModelView = true; 
+
+    function formatTime(seconds) {
+      if (isNaN(seconds) || !isFinite(seconds)) return "0:00";
+      const m = Math.floor(seconds / 60);
+      const s = Math.floor(seconds % 60);
+      return `${m}:${s < 10 ? '0' : ''}${s}`;
+    }
+
+    fetch('assets/audio/list.json')
+      .then(res => res.json())
+      .then(list => {
+        audios = list.map(item => {
+          const audio = document.createElement('audio');
+          audio.src = `assets/audio/${item.file}`;
+          audio.preload = 'auto';
+          audio.playsInline = true;
+          audioContainer.appendChild(audio);
+
+          const updateDuration = () => {
+            if (activeAudio === audio && isFinite(audio.duration)) {
+              durationLabel.innerText = formatTime(audio.duration);
+            }
+          };
+          audio.addEventListener('loadedmetadata', updateDuration);
+          audio.addEventListener('durationchange', updateDuration);
+
+          audio.addEventListener('timeupdate', () => {
+            if (activeAudio === audio && isFinite(activeAudio.duration)) {
+              const value = (activeAudio.currentTime / activeAudio.duration) * 100;
+              seekBar.value = isNaN(value) ? 0 : value;
+              currentTimeLabel.innerText = formatTime(activeAudio.currentTime);
+            }
+          });
+
+          audio.addEventListener('ended', () => {
+            playAudioBtn.innerText = "解説を再生";
+            seekBar.value = 0;
+            currentTimeLabel.innerText = "0:00";
+          });
+          return audio;
+        });
+      })
+      .catch(err => console.error('JSON読み込みエラー:', err));
+
+    playAudioBtn.addEventListener("click", (e) => {
+      e.stopPropagation(); 
+      if (!activeAudio) return;
+      if (activeAudio.paused) {
+        activeAudio.play().catch(e => console.warn(e));
+        playAudioBtn.innerText = "一時停止";
+      } else {
+        activeAudio.pause();
+        playAudioBtn.innerText = "再開";
+      }
+    });
+
+    seekBar.addEventListener("click", (e) => e.stopPropagation()); 
+    seekBar.addEventListener("input", () => {
+      if (!activeAudio || !isFinite(activeAudio.duration)) return;
+      const time = (seekBar.value / 100) * activeAudio.duration;
+      activeAudio.currentTime = time;
+    });
+
+    startBtn.addEventListener("click", async () => {
+      document.querySelector('main').style.display = "none";
+      document.querySelector('footer').style.display = "none";
+      loadingScreen.style.display = "flex"; 
+      arContainer.style.display = "block";
+
+      audios.forEach(a => a.load());
+
+      // 1. 3Dモデル読み込み
+      await new Promise((resolve) => {
+        loader.load(
+          'assets/models/meeple.glb', 
+          (gltf) => {
+            const rawModel = gltf.scene;
+            const box = new THREE.Box3().setFromObject(rawModel);
+            const center = box.getCenter(new THREE.Vector3());
+            const wrapper = new THREE.Group();
+            rawModel.position.set(-center.x, -box.min.y, -center.z);
+            wrapper.add(rawModel);
+            loadedModel = wrapper; 
+            loadedModel.scale.set(25, 25, 25); 
+            
+            const basicWhiteMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff });
+            rawModel.traverse((child) => {
+                if (child.isMesh) child.material = basicWhiteMaterial;
+            });
+            resolve();
+          },
+          undefined,
+          () => resolve()
+        );
+      });
+
+      // 2. カードグループの作成
+      cardGroup = new THREE.Group();
+      const cardGeometry = new THREE.PlaneGeometry(0.5, 0.7); // カードサイズ
+      const ruleGeometry = new THREE.PlaneGeometry(1.5, 2.1); // ★カードより大きく
+
+      const texture1 = textureLoader.load('assets/images/contents/card1.png');
+      const texture2 = textureLoader.load('assets/images/contents/card2.png');
+      const texture3 = textureLoader.load('assets/images/contents/card3.png');
+      const textureRule = textureLoader.load('assets/images/contents/rulebook.png');
+
+      const material1 = new THREE.MeshBasicMaterial({ map: texture1, side: THREE.DoubleSide });
+      const material2 = new THREE.MeshBasicMaterial({ map: texture2, side: THREE.DoubleSide });
+      const material3 = new THREE.MeshBasicMaterial({ map: texture3, side: THREE.DoubleSide });
+      const materialRule = new THREE.MeshBasicMaterial({ map: textureRule, side: THREE.DoubleSide });
+      
+
+      const card1 = new THREE.Mesh(cardGeometry, material1);
+      const card2 = new THREE.Mesh(cardGeometry, material2);
+      const card3 = new THREE.Mesh(cardGeometry, material3);
+      const rulebook = new THREE.Mesh(ruleGeometry, materialRule);
+// カード全体を少し左に寄せる
+      const cardOffsetX = 0;
+      const cardHeightY = 0.9; // ★高さを上げました
+
+      // 左
+      card1.position.set(cardOffsetX - 0.5, cardHeightY - 0.1, 0.1); 
+      card1.rotation.z = 0.2; 
+
+      // 真ん中
+      card2.position.set(cardOffsetX, cardHeightY, 0); 
+      
+      // 右
+      card3.position.set(cardOffsetX + 0.5, cardHeightY - 0.1, 0.1); 
+      card3.rotation.z = -0.2; 
+
+      // ★説明書（右側に配置）
+      rulebook.position.set(1.2, cardHeightY, -0.2); // X:0.8で右側へ、Yはカードと同じくらい
+      rulebook.rotation.z = 0; // 少しだけ傾けて自然に
+
+      cardGroup.add(card1);
+      cardGroup.add(card2);
+      cardGroup.add(card3);
+      cardGroup.add(rulebook);
+      cardGroup.visible = false;
+
+      const mindarThree = new window.MINDAR.IMAGE.MindARThree({
+        container: arContainer,
+        imageTargetSrc: "./targets.mind" 
+      });
+
+      const { renderer, scene, camera } = mindarThree;
+      const ambientLight = new THREE.AmbientLight(0xffffff, 1.0); 
+      scene.add(ambientLight);
+
+      for (let i = 0; i < audios.length; i++) {
+        const anchor = mindarThree.addAnchor(i);
+
+        if (i === 0) {
+          if (loadedModel) {
+            const modelClone = loadedModel.clone();
+            anchor.group.add(modelClone);
+            animatedModels.push({
+               mesh: modelClone,
+               speed: 0.02,
+               offset: 0,
+               type: 'model' 
+            });
+          }
+          
+          const cardsClone = cardGroup.clone();
+          cardsClone.visible = false; 
+          anchor.group.add(cardsClone);
+          
+          window.target0Objects = {
+             model: anchor.group.children[0], 
+             cards: cardsClone                
+          };
+        }
+
+        anchor.onTargetFound = () => {
+          if (currentAudioIndex === i) return;
+          if (activeAudio) {
+            activeAudio.pause();
+            activeAudio.currentTime = 0;
+          }
+
+          currentAudioIndex = i;
+          activeAudio = audios[i];
+          
+          if (i === 0) {
+              isModelView = true;
+              if(window.target0Objects) {
+                  window.target0Objects.model.visible = true;
+                  window.target0Objects.cards.visible = false;
+              }
+          }
+
+          controls.style.display = "block";
+          seekBar.value = 0;
+          currentTimeLabel.innerText = "0:00";
+          
+          if (activeAudio.readyState >= 1 && isFinite(activeAudio.duration)) {
+             durationLabel.innerText = formatTime(activeAudio.duration);
+          } else {
+             durationLabel.innerText = "--:--";
+             activeAudio.load();
+          }
+
+          if (isIOS) {
+            playAudioBtn.innerText = "解説を再生";
+          } else {
+            activeAudio.volume = 1.0;
+            activeAudio.play().then(() => {
+                playAudioBtn.innerText = "一時停止";
+            }).catch(e => {
+                playAudioBtn.innerText = "解説を再生";
+            });
+          }
+        };
+        
+        anchor.onTargetLost = () => {};
+      }
+
+      await mindarThree.start();
+      loadingScreen.style.display = "none"; 
+
+      renderer.setAnimationLoop(() => {
+        const time = performance.now() / 1000; 
+        
+        animatedModels.forEach(item => {
+            if (item.mesh.visible) {
+                item.mesh.rotation.y += item.speed; 
+                item.mesh.position.y = 0.7 + Math.sin(time * 2 + item.offset) * 0.05; 
+            }
+        });
+
+        renderer.render(scene, camera);
+      });
+
+      document.addEventListener("click", (e) => {
+          if (e.target.tagName === 'BUTTON' || e.target.tagName === 'INPUT') return;
+          
+          if (currentAudioIndex === 0 && window.target0Objects) {
+              
+              isModelView = !isModelView;
+
+              if (isModelView) {
+                  window.target0Objects.model.visible = true;
+                  window.target0Objects.cards.visible = false;
+              } else {
+                  window.target0Objects.model.visible = false;
+                  window.target0Objects.cards.visible = true;
+              }
+          }
+      });
+    });
+  </script>
+</body>
+</html>
