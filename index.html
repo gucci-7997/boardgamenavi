@@ -200,15 +200,29 @@
         anchor.onTargetFound = () => {
           if (currentAudioIndex === i) return;
           if (gameData[i]) {
-            // 団体名の更新
-            document.getElementById("info-org").innerText = gameData[i].org;
-            document.getElementById("org-link").href = gameData[i].org_url || "#";
+              const orgLabel = document.getElementById("info-org");
+              const orgLink = document.getElementById("org-link");
 
-            // ブース番号の更新
-            document.getElementById("info-booth").innerText = "ブース：" + gameData[i].booth + " (マップを表示)";
-            const mapUrl = "https://drive.google.com/file/d/1-ot6WXDhpt2IPety6z4ukh23g69pIdq1/view";
-            document.getElementById("booth-link").href = mapUrl;
-          }
+              // 団体名のテキストを設定
+              orgLabel.innerText = gameData[i].org;
+
+              // URLがあるかないかで挙動を変える
+              if (gameData[i].org_url && gameData[i].org_url !== "") {
+                orgLink.href = gameData[i].org_url;
+                orgLabel.style.textDecoration = "underline"; // リンクがある時は下線
+                orgLink.style.pointerEvents = "auto";       // クリック可能
+              } else {
+                orgLink.href = "javascript:void(0)";        // 何もしない
+                orgLabel.style.textDecoration = "none";      // リンクがない時は下線を消す
+                orgLink.style.pointerEvents = "none";       // クリック不可にする
+                orgLabel.style.color = "#333";              // 文字色を通常の色に
+              }
+
+              // ブース番号の更新（こちらは一律マップへ飛ぶのでそのままでOK）
+              document.getElementById("info-booth").innerText = "ブース：" + gameData[i].booth + " (マップを表示)";
+              const mapUrl = "https://drive.google.com/file/d/1-ot6WXDhpt2IPety6z4ukh23g69pIdq1/view";
+              document.getElementById("booth-link").href = mapUrl;
+            }
           if (activeAudio) {
             activeAudio.pause();
             activeAudio.currentTime = 0;
