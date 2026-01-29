@@ -3,7 +3,9 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ボードゲームARガイド</title>
+  <title>ボードゲームナビ</title>
+  <link rel="icon" type="image/png" href="assets/images/html/favicon.png">
+  <link rel="apple-touch-icon" href="assets/images/html/favicon.png">
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
   
@@ -13,13 +15,20 @@
 </head>
 <body>
 
+  <header class="site-header">
+    <div class="header-inner">
+      <img src="assets/images/html/header.png" alt="ロゴ" class="header-logo">
+      <span class="header-text">ボドゲナビ</span>
+    </div>
+  </header>
+
   <main>
     <section class="hero-section">
       <div class="hero-background"></div>
       <div class="hero-content">
-        <h1 class="hero-title"><br>ボードゲームARガイド</h1>
-        <p class="hero-subtitle">パッケージにスマホをかざすと解説スタート。<br>画面をタップすると中身のカードが見れます。</p>
-        <button id="start-btn" class="start-button">ARガイドを起動</button>
+        <h1 class="hero-title"><br>ボードゲームナビ</h1>
+        <p class="hero-subtitle">パッケージをカメラで読み取るとナビ開始。
+        <button id="start-btn" class="start-button">ボドゲナビを起動</button>
       </div>
     </section>
 
@@ -38,8 +47,8 @@
         </div>
         <div class="feature-item">
           <img src="assets/images/html/icon-play.png" alt="カード">
-          <h3>中身をAR表示</h3>
-          <p>タップすると内容物のカードが飛び出します。</p>
+          <h3>さまざまなコンテンツ表示</h3>
+          <p>音声だけでなく、画像や動画、3Dモデルの表示も可能</p>
         </div>
       </div>
     </section>
@@ -70,6 +79,7 @@
       </div>
     </section>
   </main> 
+  
   
   <footer>
     <p>&copy; 2025 Mottainai Games. All rights reserved.</p>
@@ -107,15 +117,6 @@
     let activeAudio = null;
     const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
 
-    const loader = new THREE.GLTFLoader();
-    // ★ 画像読み込み用のローダーを追加
-    const textureLoader = new THREE.TextureLoader();
-
-    let loadedModel = null; 
-    let cardGroup = null;   
-    let animatedModels = []; 
-    let isModelView = true; 
-
     function formatTime(seconds) {
       if (isNaN(seconds) || !isFinite(seconds)) return "0:00";
       const m = Math.floor(seconds / 60);
@@ -123,6 +124,7 @@
       return `${m}:${s < 10 ? '0' : ''}${s}`;
     }
 
+    // 音声リストの読み込み
     fetch('assets/audio/list.json')
       .then(res => res.json())
       .then(list => {
@@ -133,14 +135,6 @@
           audio.playsInline = true;
           audioContainer.appendChild(audio);
 
-          const updateDuration = () => {
-            if (activeAudio === audio && isFinite(audio.duration)) {
-              durationLabel.innerText = formatTime(audio.duration);
-            }
-          };
-          audio.addEventListener('loadedmetadata', updateDuration);
-          audio.addEventListener('durationchange', updateDuration);
-
           audio.addEventListener('timeupdate', () => {
             if (activeAudio === audio && isFinite(activeAudio.duration)) {
               const value = (activeAudio.currentTime / activeAudio.duration) * 100;
@@ -149,21 +143,21 @@
             }
           });
 
+          audio.addEventListener('loadedmetadata', () => {
+            if (activeAudio === audio) durationLabel.innerText = formatTime(audio.duration);
+          });
+
           audio.addEventListener('ended', () => {
             playAudioBtn.innerText = "解説を再生";
-            seekBar.value = 0;
-            currentTimeLabel.innerText = "0:00";
           });
           return audio;
         });
-      })
-      .catch(err => console.error('JSON読み込みエラー:', err));
+      });
 
-    playAudioBtn.addEventListener("click", (e) => {
-      e.stopPropagation(); 
+    playAudioBtn.addEventListener("click", () => {
       if (!activeAudio) return;
       if (activeAudio.paused) {
-        activeAudio.play().catch(e => console.warn(e));
+        activeAudio.play();
         playAudioBtn.innerText = "一時停止";
       } else {
         activeAudio.pause();
@@ -171,11 +165,9 @@
       }
     });
 
-    seekBar.addEventListener("click", (e) => e.stopPropagation()); 
     seekBar.addEventListener("input", () => {
       if (!activeAudio || !isFinite(activeAudio.duration)) return;
-      const time = (seekBar.value / 100) * activeAudio.duration;
-      activeAudio.currentTime = time;
+      activeAudio.currentTime = (seekBar.value / 100) * activeAudio.duration;
     });
 
     startBtn.addEventListener("click", async () => {
@@ -184,112 +176,17 @@
       loadingScreen.style.display = "flex"; 
       arContainer.style.display = "block";
 
-      audios.forEach(a => a.load());
-
-      // 1. 3Dモデル読み込み
-      await new Promise((resolve) => {
-        loader.load(
-          'assets/models/meeple.glb', 
-          (gltf) => {
-            const rawModel = gltf.scene;
-            const box = new THREE.Box3().setFromObject(rawModel);
-            const center = box.getCenter(new THREE.Vector3());
-            const wrapper = new THREE.Group();
-            rawModel.position.set(-center.x, -box.min.y, -center.z);
-            wrapper.add(rawModel);
-            loadedModel = wrapper; 
-            loadedModel.scale.set(25, 25, 25); 
-            
-            const basicWhiteMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff });
-            rawModel.traverse((child) => {
-                if (child.isMesh) child.material = basicWhiteMaterial;
-            });
-            resolve();
-          },
-          undefined,
-          () => resolve()
-        );
-      });
-
-      // 2. カードグループの作成
-      cardGroup = new THREE.Group();
-      const cardGeometry = new THREE.PlaneGeometry(0.5, 0.7); // カードサイズ
-      const ruleGeometry = new THREE.PlaneGeometry(1.5, 2.1); // ★カードより大きく
-
-      const texture1 = textureLoader.load('assets/images/contents/card1.png');
-      const texture2 = textureLoader.load('assets/images/contents/card2.png');
-      const texture3 = textureLoader.load('assets/images/contents/card3.png');
-      const textureRule = textureLoader.load('assets/images/contents/rulebook.png');
-
-      const material1 = new THREE.MeshBasicMaterial({ map: texture1, side: THREE.DoubleSide });
-      const material2 = new THREE.MeshBasicMaterial({ map: texture2, side: THREE.DoubleSide });
-      const material3 = new THREE.MeshBasicMaterial({ map: texture3, side: THREE.DoubleSide });
-      const materialRule = new THREE.MeshBasicMaterial({ map: textureRule, side: THREE.DoubleSide });
-      
-
-      const card1 = new THREE.Mesh(cardGeometry, material1);
-      const card2 = new THREE.Mesh(cardGeometry, material2);
-      const card3 = new THREE.Mesh(cardGeometry, material3);
-      const rulebook = new THREE.Mesh(ruleGeometry, materialRule);
-// カード全体を少し左に寄せる
-      const cardOffsetX = 0;
-      const cardHeightY = 0.9; // ★高さを上げました
-
-      // 左
-      card1.position.set(cardOffsetX - 0.5, cardHeightY - 0.1, 0.1); 
-      card1.rotation.z = 0.2; 
-
-      // 真ん中
-      card2.position.set(cardOffsetX, cardHeightY, 0); 
-      
-      // 右
-      card3.position.set(cardOffsetX + 0.5, cardHeightY - 0.1, 0.1); 
-      card3.rotation.z = -0.2; 
-
-      // ★説明書（右側に配置）
-      rulebook.position.set(1.2, cardHeightY, -0.2); // X:0.8で右側へ、Yはカードと同じくらい
-      rulebook.rotation.z = 0; // 少しだけ傾けて自然に
-
-      cardGroup.add(card1);
-      cardGroup.add(card2);
-      cardGroup.add(card3);
-      cardGroup.add(rulebook);
-      cardGroup.visible = false;
-
       const mindarThree = new window.MINDAR.IMAGE.MindARThree({
         container: arContainer,
         imageTargetSrc: "./targets.mind" 
       });
 
       const { renderer, scene, camera } = mindarThree;
-      const ambientLight = new THREE.AmbientLight(0xffffff, 1.0); 
-      scene.add(ambientLight);
 
+      // ターゲットごとの処理（音声の切り替えのみ）
       for (let i = 0; i < audios.length; i++) {
         const anchor = mindarThree.addAnchor(i);
-
-        if (i === 0) {
-          if (loadedModel) {
-            const modelClone = loadedModel.clone();
-            anchor.group.add(modelClone);
-            animatedModels.push({
-               mesh: modelClone,
-               speed: 0.02,
-               offset: 0,
-               type: 'model' 
-            });
-          }
-          
-          const cardsClone = cardGroup.clone();
-          cardsClone.visible = false; 
-          anchor.group.add(cardsClone);
-          
-          window.target0Objects = {
-             model: anchor.group.children[0], 
-             cards: cardsClone                
-          };
-        }
-
+        
         anchor.onTargetFound = () => {
           if (currentAudioIndex === i) return;
           if (activeAudio) {
@@ -299,72 +196,29 @@
 
           currentAudioIndex = i;
           activeAudio = audios[i];
-          
-          if (i === 0) {
-              isModelView = true;
-              if(window.target0Objects) {
-                  window.target0Objects.model.visible = true;
-                  window.target0Objects.cards.visible = false;
-              }
-          }
-
           controls.style.display = "block";
-          seekBar.value = 0;
-          currentTimeLabel.innerText = "0:00";
-          
-          if (activeAudio.readyState >= 1 && isFinite(activeAudio.duration)) {
-             durationLabel.innerText = formatTime(activeAudio.duration);
-          } else {
-             durationLabel.innerText = "--:--";
-             activeAudio.load();
+
+          if (isFinite(activeAudio.duration)) {
+            durationLabel.innerText = formatTime(activeAudio.duration);
           }
 
           if (isIOS) {
             playAudioBtn.innerText = "解説を再生";
           } else {
-            activeAudio.volume = 1.0;
             activeAudio.play().then(() => {
-                playAudioBtn.innerText = "一時停止";
-            }).catch(e => {
-                playAudioBtn.innerText = "解説を再生";
+              playAudioBtn.innerText = "一時停止";
+            }).catch(() => {
+              playAudioBtn.innerText = "解説を再生";
             });
           }
         };
-        
-        anchor.onTargetLost = () => {};
       }
 
       await mindarThree.start();
       loadingScreen.style.display = "none"; 
 
       renderer.setAnimationLoop(() => {
-        const time = performance.now() / 1000; 
-        
-        animatedModels.forEach(item => {
-            if (item.mesh.visible) {
-                item.mesh.rotation.y += item.speed; 
-                item.mesh.position.y = 0.7 + Math.sin(time * 2 + item.offset) * 0.05; 
-            }
-        });
-
         renderer.render(scene, camera);
-      });
-
-      document.addEventListener("click", (e) => {
-          if (e.target.tagName === 'BUTTON' || e.target.tagName === 'INPUT') return;
-          
-          if (currentAudioIndex === 0 && window.target0Objects) {
-              
-              isModelView = !isModelView;
-
-              if (isModelView) {
-                  window.target0Objects.model.visible = true;
-                  window.target0Objects.cards.visible = false;
-              } else {
-                  window.target0Objects.model.visible = false;
-                  window.target0Objects.cards.visible = true;
-              }
-          }
       });
     });
   </script>

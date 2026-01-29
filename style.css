@@ -265,3 +265,32 @@ footer {
 #seek-bar::-webkit-slider-thumb:hover {
   transform: scale(1.2);
 }
+
+.site-header {
+  background-color: #fff;
+  padding: 12px 20px;
+  border-bottom: 2px solid #f0f0f0;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+}
+
+.header-inner {
+  display: flex;
+  align-items: center; /* 上下中央 */
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+.header-logo {
+  height: 32px; /* ロゴの大きさ */
+  width: auto;
+  margin-right: 12px;
+}
+
+.header-text {
+  font-size: 1.1rem;
+  font-weight: bold;
+  color: #333;
+  letter-spacing: 0.05em;
+}
