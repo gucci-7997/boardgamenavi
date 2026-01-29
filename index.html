@@ -93,9 +93,11 @@
   <div id="audio-container" style="display:none"></div>
 
   <div id="audio-controls">
-    <div id="game-info" style="text-align: center; margin-bottom: 10px;">
-      <div id="info-org" style="font-weight: bold; font-size: 1.1rem;"></div>
-      <div id="info-booth" style="color: #666; font-size: 0.9rem;"></div>
+    <div id="game-info" style="text-align: center; margin-bottom: 12px; border-bottom: 1px solid #eee; padding-bottom: 8px;">
+      <div id="info-org" style="font-weight: bold; font-size: 1.1rem; color: #333;"></div>
+      <a id="booth-link" href="#" target="_blank" rel="noopener noreferrer" style="text-decoration: none;">
+        <div id="info-booth" style="font-size: 0.9rem; color: #e67e22; margin-top: 4px; text-decoration: underline;"></div>
+      </a>
     </div>
     <button id="play-audio-btn">解説を再生</button>
     <div class="seek-wrapper">
@@ -196,7 +198,12 @@
         anchor.onTargetFound = () => {
           if (currentAudioIndex === i) return;
           document.getElementById("info-org").innerText = gameData[i].org;
-          document.getElementById("info-booth").innerText = gameData[i].booth;
+          document.getElementById("info-booth").innerText = "ブース：" + gameData[i].booth;
+
+          // 会場マップのURLをセット
+          const mapUrl = "https://drive.google.com/file/d/1-ot6WXDhpt2IPety6z4ukh23g69pIdq1/view";
+          document.getElementById("booth-link").href = mapUrl;
+
           if (activeAudio) {
             activeAudio.pause();
             activeAudio.currentTime = 0;

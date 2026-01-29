@@ -294,3 +294,7 @@ footer {
   color: #333;
   letter-spacing: 0.05em;
 }
+
+#booth-link:active {
+  opacity: 0.6;
+}
