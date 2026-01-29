@@ -1,22 +1,22 @@
 [
   {
     "target": 0,
-    "file": "package-front.wav"
+    "file": "elevator.wav"
   },
   {
     "target": 1,
-    "file": "package-back.wav"
-  },
-  {
-    "target": 2,
-    "file": "instructions-front.wav"
-  },
-  {
-    "target": 3,
     "file": "syusyoku.wav"
   },
   {
+    "target": 2,
+    "file": "teizitaisya-back.wav"
+  },
+  {
+    "target": 3,
+    "file": "teizitaisya-front.wav"
+  },
+  {
     "target": 4,
-    "file": "elevator.wav"
+    "file": "teizitaisya-instructions.wav"
   }
 ]
