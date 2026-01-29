@@ -93,6 +93,10 @@
   <div id="audio-container" style="display:none"></div>
 
   <div id="audio-controls">
+    <div id="game-info" style="text-align: center; margin-bottom: 10px;">
+      <div id="info-org" style="font-weight: bold; font-size: 1.1rem;"></div>
+      <div id="info-booth" style="color: #666; font-size: 0.9rem;"></div>
+    </div>
     <button id="play-audio-btn">解説を再生</button>
     <div class="seek-wrapper">
       <span id="current-time">0:00</span>
@@ -124,10 +128,12 @@
       return `${m}:${s < 10 ? '0' : ''}${s}`;
     }
 
+    let gameData = []; // 追加：情報を保持する配列
     // 音声リストの読み込み
     fetch('assets/audio/list.json')
       .then(res => res.json())
       .then(list => {
+        gameData = list; // データを保存
         audios = list.map(item => {
           const audio = document.createElement('audio');
           audio.src = `assets/audio/${item.file}`;
@@ -189,6 +195,8 @@
         
         anchor.onTargetFound = () => {
           if (currentAudioIndex === i) return;
+          document.getElementById("info-org").innerText = gameData[i].org;
+          document.getElementById("info-booth").innerText = gameData[i].booth;
           if (activeAudio) {
             activeAudio.pause();
             activeAudio.currentTime = 0;

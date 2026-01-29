@@ -1,22 +1,32 @@
 [
   {
     "target": 0,
-    "file": "elevator.wav"
+    "file": "elevator.wav",
+    "org":"MottainaiGames",
+    "booth":"G-2"
   },
   {
     "target": 1,
-    "file": "syusyoku.wav"
+    "file": "syusyoku.wav",
+    "org":"MottainaiGames",
+    "booth":"G-2"
   },
   {
     "target": 2,
-    "file": "teizitaisya-back.wav"
+    "file": "teizitaisya-back.wav",
+    "org":"MottainaiGames",
+    "booth":"G-2"
   },
   {
     "target": 3,
-    "file": "teizitaisya-front.wav"
+    "file": "teizitaisya-front.wav",
+    "org":"MottainaiGames",
+    "booth":"G-2"
   },
   {
     "target": 4,
-    "file": "teizitaisya-instructions.wav"
+    "file": "teizitaisya-instructions.wav",
+    "org":"MottainaiGames",
+    "booth":"G-2"
   }
 ]
