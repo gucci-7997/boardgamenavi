@@ -94,7 +94,9 @@
 
   <div id="audio-controls">
     <div id="game-info" style="text-align: center; margin-bottom: 12px; border-bottom: 1px solid #eee; padding-bottom: 8px;">
-      <div id="info-org" style="font-weight: bold; font-size: 1.1rem; color: #333;"></div>
+      <a id="org-link" href="#" target="_blank" rel="noopener noreferrer" style="text-decoration: none;">
+        <div id="info-org" style="font-weight: bold; font-size: 1.1rem; color: #007bff; text-decoration: underline;"></div>
+      </a>
       <a id="booth-link" href="#" target="_blank" rel="noopener noreferrer" style="text-decoration: none;">
         <div id="info-booth" style="font-size: 0.9rem; color: #e67e22; margin-top: 4px; text-decoration: underline;"></div>
       </a>
@@ -197,13 +199,16 @@
         
         anchor.onTargetFound = () => {
           if (currentAudioIndex === i) return;
-          document.getElementById("info-org").innerText = gameData[i].org;
-          document.getElementById("info-booth").innerText = "ブース：" + gameData[i].booth;
+          if (gameData[i]) {
+            // 団体名の更新
+            document.getElementById("info-org").innerText = gameData[i].org;
+            document.getElementById("org-link").href = gameData[i].org_url || "#";
 
-          // 会場マップのURLをセット
-          const mapUrl = "https://drive.google.com/file/d/1-ot6WXDhpt2IPety6z4ukh23g69pIdq1/view";
-          document.getElementById("booth-link").href = mapUrl;
-
+            // ブース番号の更新
+            document.getElementById("info-booth").innerText = "ブース：" + gameData[i].booth + " (マップを表示)";
+            const mapUrl = "https://drive.google.com/file/d/1-ot6WXDhpt2IPety6z4ukh23g69pIdq1/view";
+            document.getElementById("booth-link").href = mapUrl;
+          }
           if (activeAudio) {
             activeAudio.pause();
             activeAudio.currentTime = 0;
