@@ -1,36 +1,65 @@
 [
   {
     "target": 0,
-    "file": "elevator.wav",
-    "org":"MottainaiGames",
-    "org_url": "https://x.com/MottainaiGames",
-    "booth":"G-2"
+    "file": "ESPER.mp3",
+    "org":"ひらめきうさぎ",
+    "org_url": "https://x.com/hiramekiusagi",
+    "booth":"G-5"
   },
   {
     "target": 1,
-    "file": "syusyoku.wav",
-    "org":"MottainaiGames",
-    "org_url": "https://x.com/MottainaiGames",
-    "booth":"G-2"
+    "file": "KatanaSpirits.mp3",
+    "org":"Good Spirit Games",
+    "org_url": "https://x.com/GeoffreyChia",
+    "booth":"I-5"
   },
   {
     "target": 2,
-    "file": "teizitaisya-back.wav",
-    "org":"MottainaiGames",
-    "booth":"G-2"
+    "file": "VENUSVERSUS.mp3",
+    "org":"くまねこ堂",
+    "org_url": "https://x.com/kumaneko_shop24",
+    "booth":"E-24"
   },
   {
     "target": 3,
-    "file": "teizitaisya-front.wav",
+    "file": "aoki.mp3",
+    "org":"蒼空久遠工房",
+    "org_url": "https://x.com/firmamentum111",
+    "booth":"E-2"
+  },
+  {
+    "target": 4,
+    "file": "ashita.mp3",
+    "org":"Re-one",
+    "org_url": "https://reone-boardgame.github.io/",
+    "booth":"F-14"
+  },
+  {
+    "target": 5,
+    "file": "imposter.mp3",
+    "org":"UNPOT Game Lab",
+    "org_url": "https://twitter.com/UNPOT_GameLab",
+    "booth":"F-12"
+  },
+  {
+    "target": 6,
+    "file": "syusyoku.mp3",
     "org":"MottainaiGames",
     "org_url": "https://x.com/MottainaiGames",
     "booth":"G-2"
   },
   {
-    "target": 4,
-    "file": "teizitaisya-instructions.wav",
+    "target": 7,
+    "file": "teizitaisya.mp3",
     "org":"MottainaiGames",
     "org_url": "https://x.com/MottainaiGames",
     "booth":"G-2"
+  },
+  {
+    "target": 8,
+    "file": "yumeyume.mp3",
+    "org":"ペンタススタジオ",
+    "org_url": "https://www.pentas-studio.com/index.html#top",
+    "booth":"D-14"
   }
 ]
